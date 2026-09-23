@@ -1,0 +1,549 @@
+/* ═══════════════════════════════════════════════════════════
+   GPU & CPU MONITORING DASHBOARD  ·  style.css
+   NVIDIA engineering aesthetic: dark, precise, restrained green
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── TOKEN SYSTEM ── */
+:root {
+  /* Base palette */
+  --col-bg:          #0a0a0a;
+  --col-surface:     #111213;
+  --col-surface-2:   #181a1b;
+  --col-surface-3:   #1f2123;
+  --col-border:      #272a2c;
+  --col-border-2:    #2e3133;
+
+  /* Typography */
+  --col-text-hi:     #e8eaeb;
+  --col-text-md:     #8e9499;
+  --col-text-lo:     #555c62;
+
+  /* NVIDIA green — used sparingly */
+  --col-green:       #76b900;
+  --col-green-dim:   rgba(118, 185, 0, 0.12);
+  --col-green-glow:  rgba(118, 185, 0, 0.25);
+
+  /* Semantic accent colors (used only in progress bars, not UI chrome) */
+  --col-temp:        #e07040;   /* warm orange for heat */
+  --col-power:       #c0a030;   /* amber for power */
+  --col-clock:       #5090d0;   /* cool blue for clocks */
+  --col-cpu:         #7070d0;   /* violet for CPU */
+  --col-ram:         #4090a0;   /* teal for RAM */
+
+  /* Graph */
+  --col-graph-line-green:  #76b900;
+  --col-graph-line-cpu:    #7070d0;
+  --col-graph-grid:        rgba(255,255,255,0.04);
+  --col-graph-bg:          #0d0e0f;
+
+  /* Spacing */
+  --gap-xs:  4px;
+  --gap-sm:  8px;
+  --gap-md:  14px;
+  --gap-lg:  22px;
+  --gap-xl:  32px;
+
+  /* Layout */
+  --sidebar-w:    240px;
+  --topbar-h:     44px;
+  --footer-h:     30px;
+  --radius:       3px;
+
+  /* Typography */
+  --font-mono: 'Courier New', 'Lucida Console', monospace;
+  --font-ui:   -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--col-bg);
+  color: var(--col-text-hi);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOPBAR
+   ═══════════════════════════════════════════════════════════ */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  background: var(--col-surface);
+  border-bottom: 1px solid var(--col-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gap-lg);
+  z-index: 100;
+  letter-spacing: 0.04em;
+}
+
+.brand-mark {
+  color: var(--col-green);
+  font-size: 20px;
+  margin-right: var(--gap-sm);
+  line-height: 1;
+}
+
+.brand-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--col-text-hi);
+  text-transform: uppercase;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.status-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--col-text-lo);
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border: 1px solid var(--col-border-2);
+  border-radius: 2px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--col-text-lo);
+  transition: background 0.4s;
+}
+
+.status-dot.live {
+  background: var(--col-green);
+  box-shadow: 0 0 6px var(--col-green-glow);
+}
+
+.status-text {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--col-text-md);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT GRID
+   ═══════════════════════════════════════════════════════════ */
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  margin-top: var(--topbar-h);
+  margin-bottom: var(--footer-h);
+  min-height: calc(100vh - var(--topbar-h) - var(--footer-h));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════ */
+.sidebar {
+  background: var(--col-surface);
+  border-right: 1px solid var(--col-border);
+  padding: var(--gap-lg) var(--gap-md);
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - var(--footer-h));
+  overflow-y: auto;
+}
+
+.sidebar-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--col-text-lo);
+  text-transform: uppercase;
+  margin-bottom: var(--gap-sm);
+}
+
+.sidebar-section {
+  padding: var(--gap-md) 0;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--col-border);
+}
+
+.gpu-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--col-text-hi);
+  line-height: 1.3;
+}
+
+.gpu-sub {
+  font-size: 11px;
+  color: var(--col-green);
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--col-border);
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-label {
+  font-size: 10px;
+  color: var(--col-text-lo);
+  letter-spacing: 0.06em;
+}
+
+.info-value {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--col-text-hi);
+  font-weight: 600;
+}
+
+/* VRAM / RAM progress bars in sidebar */
+.vram-bar-track {
+  width: 100%;
+  height: 4px;
+  background: var(--col-surface-3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.vram-bar-fill {
+  height: 100%;
+  background: var(--col-green);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.ram-bar { background: var(--col-ram); }
+
+.vram-numbers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--col-text-md);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════════════════════════ */
+.content {
+  padding: var(--gap-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  background: var(--col-bg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   METRIC CARDS ROW
+   ═══════════════════════════════════════════════════════════ */
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--gap-sm);
+}
+
+.metric-card {
+  background: var(--col-surface);
+  border: 1px solid var(--col-border);
+  border-radius: var(--radius);
+  padding: var(--gap-md) var(--gap-md) var(--gap-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.metric-card:hover {
+  border-color: var(--col-border-2);
+  background: var(--col-surface-2);
+}
+
+.metric-card:hover::after {
+  background: var(--col-green-dim);
+}
+
+.metric-card.active-card {
+  border-color: var(--col-green);
+  background: var(--col-surface-2);
+}
+
+.metric-card.active-card::after {
+  background: var(--col-green);
+}
+
+.card-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--col-text-lo);
+  text-transform: uppercase;
+}
+
+.metric-card.active-card .card-label {
+  color: var(--col-green);
+}
+
+.card-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--col-text-hi);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.card-unit {
+  font-size: 10px;
+  color: var(--col-text-md);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--gap-sm);
+}
+
+.card-bar-track {
+  height: 2px;
+  background: var(--col-surface-3);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.card-bar-fill {
+  height: 100%;
+  background: var(--col-green);
+  border-radius: 1px;
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.temp-bar  { background: var(--col-temp); }
+.power-bar { background: var(--col-power); }
+.clock-bar { background: var(--col-clock); }
+.cpu-bar   { background: var(--col-cpu); }
+
+/* ═══════════════════════════════════════════════════════════
+   GRAPH SECTIONS
+   ═══════════════════════════════════════════════════════════ */
+.graph-section {
+  background: var(--col-surface);
+  border: 1px solid var(--col-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.graph-section-secondary {
+  background: var(--col-surface);
+}
+
+.graph-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gap-sm) var(--gap-md);
+  border-bottom: 1px solid var(--col-border);
+  background: var(--col-surface-2);
+}
+
+.graph-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--col-text-hi);
+  text-transform: uppercase;
+}
+
+.graph-range {
+  font-size: 10px;
+  color: var(--col-text-lo);
+  font-family: var(--font-mono);
+}
+
+.graph-wrap {
+  height: 160px;
+  padding: var(--gap-sm);
+  background: var(--col-graph-bg);
+  position: relative;
+}
+
+.graph-wrap-sm {
+  height: 110px;
+}
+
+.graph-wrap canvas,
+.graph-wrap-sm canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3D VISUALIZATION REGION
+   ═══════════════════════════════════════════════════════════ */
+.viz3d-section {
+  background: var(--col-surface);
+  border: 1px solid var(--col-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.viz3d-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gap-sm) var(--gap-md);
+  border-bottom: 1px solid var(--col-border);
+  background: var(--col-surface-2);
+}
+
+.viz3d-wrap {
+  position: relative;
+  height: 240px;
+  background: var(--col-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Three.js canvas (hidden until init3D() activates it) */
+#viz3dCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;  /* shown by init3D() */
+}
+
+.viz3d-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-sm);
+  text-align: center;
+  pointer-events: none;
+}
+
+.viz3d-icon {
+  font-size: 40px;
+  color: var(--col-border-2);
+  line-height: 1;
+}
+
+.viz3d-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--col-text-lo);
+  text-transform: uppercase;
+}
+
+.viz3d-sub {
+  font-size: 10px;
+  color: var(--col-text-lo);
+  font-family: var(--font-mono);
+}
+
+.viz3d-telemetry-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+  justify-content: center;
+  margin-top: var(--gap-xs);
+}
+
+.hint-chip {
+  font-size: 9px;
+  color: var(--col-green);
+  border: 1px solid rgba(118, 185, 0, 0.25);
+  border-radius: 2px;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER BAR
+   ═══════════════════════════════════════════════════════════ */
+.footer-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--footer-h);
+  background: var(--col-surface);
+  border-top: 1px solid var(--col-border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--gap-lg);
+  gap: var(--gap-md);
+  font-size: 10px;
+  color: var(--col-text-lo);
+  font-family: var(--font-mono);
+  z-index: 100;
+}
+
+.footer-divider {
+  color: var(--col-border-2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR (webkit)
+   ═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--col-bg); }
+::-webkit-scrollbar-thumb { background: var(--col-border-2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--col-text-lo); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOCUS / KEYBOARD ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════ */
+.metric-card:focus-visible {
+  outline: 1px solid var(--col-green);
+  outline-offset: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .vram-bar-fill,
+  .card-bar-fill { transition: none; }
+}

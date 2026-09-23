@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NVIDIA System Monitor</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Chart.js for performance graphs -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+      defer
+    ></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <!-- ══════════════════════════════════════════════
+       HEADER BAR
+  ══════════════════════════════════════════════ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="brand-mark">▐</span>
+        <span class="brand-name">NVIDIA SYSTEM MONITOR</span>
+      </div>
+      <div class="topbar-right">
+        <span class="status-label">MOCK DATA</span>
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">CONNECTING</span>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════════
+       MAIN LAYOUT: sidebar + content
+  ══════════════════════════════════════════════ -->
+    <div class="layout">
+      <!-- ── LEFT SIDEBAR: GPU identity + system info ── -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <p class="sidebar-eyebrow">DISPLAY ADAPTER</p>
+          <p class="gpu-name" id="gpuName">NVIDIA GeForce RTX 3050</p>
+          <p class="gpu-sub">Laptop GPU</p>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section">
+          <div class="info-row">
+            <span class="info-label">Driver</span>
+            <span class="info-value" id="driverVer">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">CUDA</span>
+            <span class="info-value" id="cudaVer">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">VRAM</span>
+            <span class="info-value" id="vramTotal">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">CPU Cores</span>
+            <span class="info-value" id="cpuCores">—</span>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- VRAM bar -->
+        <div class="sidebar-section">
+          <p class="sidebar-eyebrow">VRAM</p>
+          <div class="vram-bar-track">
+            <div class="vram-bar-fill" id="vramBarFill"></div>
+          </div>
+          <div class="vram-numbers">
+            <span id="vramUsedGb">0.00 GiB</span>
+            <span id="vramFreeGb">0.00 GiB free</span>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- RAM bar -->
+        <div class="sidebar-section">
+          <p class="sidebar-eyebrow">SYSTEM MEMORY</p>
+          <div class="vram-bar-track">
+            <div class="vram-bar-fill ram-bar" id="ramBarFill"></div>
+          </div>
+          <div class="vram-numbers">
+            <span id="ramUsedGb">0.00 GiB</span>
+            <span id="ramFreeGb">0.00 GiB free</span>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- 60-sample averages (populated when C engine reports them) -->
+        <div class="sidebar-section">
+          <p class="sidebar-eyebrow">60-SAMPLE AVERAGES</p>
+          <div class="info-row">
+            <span class="info-label">CPU avg</span>
+            <span class="info-value" id="avgCpu">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">GPU avg</span>
+            <span class="info-value" id="avgGpu">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Temp avg</span>
+            <span class="info-value" id="avgTemp">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Clock avg</span>
+            <span class="info-value" id="avgClock">—</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ── MAIN CONTENT ── -->
+      <main class="content">
+        <!-- ── ROW 1: Primary metric cards ── -->
+        <section class="cards-row" id="cardsRow">
+          <div
+            class="metric-card active-card"
+            data-metric="gpu_util"
+            tabindex="0"
+            role="button"
+            aria-label="GPU Utilization"
+          >
+            <span class="card-label">GPU UTIL</span>
+            <span class="card-value" id="valGpuUtil">—</span>
+            <span class="card-unit">%</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill" id="barGpuUtil"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="gpu_temp"
+            tabindex="0"
+            role="button"
+            aria-label="GPU Temperature"
+          >
+            <span class="card-label">TEMPERATURE</span>
+            <span class="card-value" id="valGpuTemp">—</span>
+            <span class="card-unit">°C</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill temp-bar" id="barGpuTemp"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="gpu_power"
+            tabindex="0"
+            role="button"
+            aria-label="GPU Power"
+          >
+            <span class="card-label">POWER</span>
+            <span class="card-value" id="valGpuPower">—</span>
+            <span class="card-unit">W</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill power-bar" id="barGpuPower"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="gpu_clock"
+            tabindex="0"
+            role="button"
+            aria-label="GPU Clock"
+          >
+            <span class="card-label">GPU CLOCK</span>
+            <span class="card-value" id="valGpuClock">—</span>
+            <span class="card-unit">MHz</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill clock-bar" id="barGpuClock"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="gpu_mem_clock"
+            tabindex="0"
+            role="button"
+            aria-label="GPU Memory Clock"
+          >
+            <span class="card-label">MEM CLOCK</span>
+            <span class="card-value" id="valGpuMemClock">—</span>
+            <span class="card-unit">MHz</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill clock-bar" id="barGpuMemClock"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="vram_usage"
+            tabindex="0"
+            role="button"
+            aria-label="VRAM Usage"
+          >
+            <span class="card-label">VRAM USAGE</span>
+            <span class="card-value" id="valVramUsage">—</span>
+            <span class="card-unit">%</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill" id="barVramUsage"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="gpu_mem_util"
+            tabindex="0"
+            role="button"
+            aria-label="GPU Memory Bus Utilization"
+          >
+            <span class="card-label">MEM BUS UTIL</span>
+            <span class="card-value" id="valGpuMemUtil">—</span>
+            <span class="card-unit">%</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill" id="barGpuMemUtil"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="cpu_usage"
+            tabindex="0"
+            role="button"
+            aria-label="CPU Usage"
+          >
+            <span class="card-label">CPU USAGE</span>
+            <span class="card-value" id="valCpuUsage">—</span>
+            <span class="card-unit">%</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill cpu-bar" id="barCpuUsage"></div>
+            </div>
+          </div>
+
+          <div
+            class="metric-card"
+            data-metric="ram_usage"
+            tabindex="0"
+            role="button"
+            aria-label="RAM Usage"
+          >
+            <span class="card-label">RAM USAGE</span>
+            <span class="card-value" id="valRamUsage">—</span>
+            <span class="card-unit">%</span>
+            <div class="card-bar-track">
+              <div class="card-bar-fill ram-bar" id="barRamUsage"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── ROW 2: Interactive graph area ── -->
+        <section class="graph-section">
+          <div class="graph-header">
+            <span class="graph-title" id="graphTitle">GPU UTILIZATION</span>
+            <span class="graph-range">60s rolling window · 1s interval</span>
+          </div>
+          <div class="graph-wrap">
+            <canvas id="primaryGraph"></canvas>
+          </div>
+        </section>
+
+        <!-- ── ROW 3: Always-on CPU graph ── -->
+        <section class="graph-section graph-section-secondary">
+          <div class="graph-header">
+            <span class="graph-title">CPU UTILIZATION</span>
+            <span class="graph-range">60s rolling window · 1s interval</span>
+          </div>
+          <div class="graph-wrap graph-wrap-sm">
+            <canvas id="cpuGraph"></canvas>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════
+           3D VISUALIZATION PLACEHOLDER
+           ── Future integration point ──
+           Load a Blender-exported .glb via Three.js here.
+           Script.js contains init3D() stub + update3D(telemetry)
+           that drives material uniforms from live telemetry.
+      ══════════════════════════════════════════════ -->
+        <section class="viz3d-section" style="display: none">
+          <div class="viz3d-header">
+            <span class="graph-title">3D GPU VISUALIZATION</span>
+            <span class="graph-range">Three.js · Blender GLB export</span>
+          </div>
+          <div class="viz3d-wrap" id="viz3dWrap">
+            <!-- canvas#viz3dCanvas will be injected by Three.js when integrated -->
+            <canvas id="viz3dCanvas"></canvas>
+            <div class="viz3d-placeholder" id="viz3dPlaceholder">
+              <div class="viz3d-icon">⬡</div>
+              <p class="viz3d-label">3D VIEWPORT</p>
+              <p class="viz3d-sub">
+                Drop Blender .glb export here · init3D() in script.js
+              </p>
+              <div class="viz3d-telemetry-hints">
+                <span class="hint-chip">GPU UTIL → intensity</span>
+                <span class="hint-chip">TEMP → heat map</span>
+                <span class="hint-chip">POWER → emissive</span>
+                <span class="hint-chip">CLOCK → anim speed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ── TIMESTAMP FOOTER ── -->
+    <footer class="footer-bar">
+      <span id="lastUpdate">Last update: —</span>
+      <span class="footer-divider">|</span>
+      <span id="sampleCount">Samples: 0</span>
+      <span class="footer-divider">|</span>
+      <span>monitoring.csv · telemetry.json</span>
+    </footer>
+  </body>
+</html>
