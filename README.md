@@ -305,3 +305,5 @@ Some parts are more developed than others, and the architecture will continue to
 The main goal is to understand the systems underneath the tools i normally use, starting from C and hardware telemetry and gradually moving deeper into computer architecture, GPUs and real time systems.
 
 **and yea used AI to help me writing this README**
+
+

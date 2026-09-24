@@ -274,37 +274,6 @@
             <canvas id="cpuGraph"></canvas>
           </div>
         </section>
-
-        <!-- ══════════════════════════════════════════════
-           3D VISUALIZATION PLACEHOLDER
-           ── Future integration point ──
-           Load a Blender-exported .glb via Three.js here.
-           Script.js contains init3D() stub + update3D(telemetry)
-           that drives material uniforms from live telemetry.
-      ══════════════════════════════════════════════ -->
-        <section class="viz3d-section" style="display: none">
-          <div class="viz3d-header">
-            <span class="graph-title">3D GPU VISUALIZATION</span>
-            <span class="graph-range">Three.js · Blender GLB export</span>
-          </div>
-          <div class="viz3d-wrap" id="viz3dWrap">
-            <!-- canvas#viz3dCanvas will be injected by Three.js when integrated -->
-            <canvas id="viz3dCanvas"></canvas>
-            <div class="viz3d-placeholder" id="viz3dPlaceholder">
-              <div class="viz3d-icon">⬡</div>
-              <p class="viz3d-label">3D VIEWPORT</p>
-              <p class="viz3d-sub">
-                Drop Blender .glb export here · init3D() in script.js
-              </p>
-              <div class="viz3d-telemetry-hints">
-                <span class="hint-chip">GPU UTIL → intensity</span>
-                <span class="hint-chip">TEMP → heat map</span>
-                <span class="hint-chip">POWER → emissive</span>
-                <span class="hint-chip">CLOCK → anim speed</span>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
 
